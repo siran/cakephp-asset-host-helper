@@ -59,7 +59,7 @@ class CfHelper extends AppHelper {
      *
      */
     public $configuration = array(
-		'assetHost' => 'assets%d.example.com',
+	'assetHost' => 'assets%d.example.com',
         'numHostsMin' => 0,
         'numHostsMax' => 3,
         'sslHost' => 'sslhost.example.com',
@@ -68,11 +68,11 @@ class CfHelper extends AppHelper {
         'cssDir' => 'css',
         'assetDir' => null,
         'forceTimestamp' => false
-	);
+    );
 
     public function __construct($configuration) {
 
-		$this->configuration = Set::merge($this->configuration, $configuration);
+	$this->configuration = Set::merge($this->configuration, $configuration);
     }
 
     /**
