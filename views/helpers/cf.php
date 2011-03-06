@@ -15,7 +15,7 @@ class CfHelper extends AppHelper {
      * Let's load required helpers
      *
      */
-    public $helpers = array('Html', 'Javascript');
+    public $helpers = array('Html');
 
     /**
      * Configuration
@@ -92,22 +92,27 @@ class CfHelper extends AppHelper {
      * Return image path/URL either remote or local based on the debug level
      *
      */
-    public function image($assets, $options = array()) {
+    public function image($assets, $options = array(), $src = false) {
 
         $this->setAssetDir($this->configuration['imgDir']);
 
-        return $this->Html->image($this->setAssetPath($assets), $options);
+        if ($src == false) {
+            return $this->Html->image($this->setAssetPath($assets), $options);
+        }
+        else {
+            return $this->setAssetPath($assets);
+        }
     }
 
     /**
      * Return JS link path/URL either remote or local based on the debug level
      *
      */
-    public function jsLink($assets, $inline = true) {
+    public function script($assets, $inline = true) {
 
         $this->setAssetDir($this->configuration['jsDir']);
 
-        return $this->Javascript->link($this->setAssetPath($assets), $inline);
+        return $this->Html->script($this->setAssetPath($assets), $inline);
     }
 
     /**
@@ -128,9 +133,9 @@ class CfHelper extends AppHelper {
      */
     private function setAssetPath($assets = null) {
 
-        if($assets && Configure::read() == 0) {
+        if ($assets && Configure::read() == 0) {
 
-            if(is_array($assets)) {
+            if (is_array($assets)) {
 
                 for($i = 0; $i < count($assets); $i++) {
 
@@ -161,7 +166,7 @@ class CfHelper extends AppHelper {
      */
     private function setAssetDir($dir = null) {
 
-        if($dir) {
+        if ($dir) {
 
             $this->configuration['assetDir'] = '/' . $dir . '/';
         }
@@ -175,7 +180,7 @@ class CfHelper extends AppHelper {
      */
     private function getAssetTimestamp() {
 
-        if($this->configuration['forceTimestamp'] == true) {
+        if ($this->configuration['forceTimestamp'] == true) {
 
             return '?' . @filemtime(str_replace('/', DS, WWW_ROOT . $this->configuration['assetDir']));
         }
@@ -189,7 +194,7 @@ class CfHelper extends AppHelper {
      */
     private function getProtocol() {
 
-        if(env('HTTPS')) {
+        if (env('HTTPS')) {
 
             return 'https://';
         }
@@ -207,7 +212,7 @@ class CfHelper extends AppHelper {
      */
     private function getAssetHost() {
 
-        if(!env('HTTPS')) {
+        if (!env('HTTPS')) {
 
             if(strstr($this->configuration['assetHost'], '%d')) {
 
