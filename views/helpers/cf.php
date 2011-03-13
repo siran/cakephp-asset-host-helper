@@ -94,7 +94,12 @@ class CfHelper extends AppHelper {
      */
     public function image($assets, $options = array(), $src = false) {
 
-        $this->setAssetDir($this->configuration['imgDir']);
+        if($assets[0] = '/') {
+            $this->setAssetDir(null);
+        }
+        else {
+            $this->setAssetDir($this->configuration['imgDir']);
+        }
 
         if ($src == false) {
             return $this->Html->image($this->setAssetPath($assets), $options);
@@ -133,7 +138,7 @@ class CfHelper extends AppHelper {
      */
     private function setAssetPath($assets = null) {
 
-        if ($assets && Configure::read() == 0) {
+        //if ($assets && Configure::read() == 0) {
 
             if (is_array($assets)) {
 
@@ -146,7 +151,7 @@ class CfHelper extends AppHelper {
 
                 return $this->pathPrep() . $assets . $this->getAssetTimestamp();
             }
-        }
+        //}
 
         return $assets;
     }
