@@ -94,7 +94,12 @@ class CfHelper extends AppHelper {
      */
     public function image($assets, $options = array(), $src = false) {
 
-        $this->setAssetDir($this->configuration['imgDir']);
+        if($assets[0] === '/') {
+            $this->setAssetDir(null);
+        }
+        else {
+            $this->setAssetDir($this->configuration['imgDir']);
+        }
 
         if ($src == false) {
             return $this->Html->image($this->setAssetPath($assets), $options);
