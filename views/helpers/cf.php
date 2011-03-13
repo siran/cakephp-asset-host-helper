@@ -94,19 +94,19 @@ class CfHelper extends AppHelper {
      */
     public function image($assets, $options = array(), $src = false) {
 
-        if($assets[0] = '/') {
+        $this->setAssetDir($this->configuration['imgDir']);
+
+        if ($assets[0] == '/') {
+
             $this->setAssetDir(null);
         }
-        else {
-            $this->setAssetDir($this->configuration['imgDir']);
-        }
 
-        if ($src == false) {
-            return $this->Html->image($this->setAssetPath($assets), $options);
-        }
-        else {
+        if ($src == true) {
+            
             return $this->setAssetPath($assets);
         }
+
+        return $this->Html->image($this->setAssetPath($assets), $options);
     }
 
     /**
@@ -138,12 +138,10 @@ class CfHelper extends AppHelper {
      */
     private function setAssetPath($assets = null) {
 
-        //if ($assets && Configure::read() == 0) {
-
+        if ($assets && Configure::read() == 0) {
             if (is_array($assets)) {
 
-                for($i = 0; $i < count($assets); $i++) {
-
+                for ($i = 0; $i < count($assets); $i++) {
                     $assets[$i] = $this->pathPrep() . $assets[$i] . $this->getAssetTimestamp();
                 }
             }
@@ -151,7 +149,7 @@ class CfHelper extends AppHelper {
 
                 return $this->pathPrep() . $assets . $this->getAssetTimestamp();
             }
-        //}
+        }
 
         return $assets;
     }
@@ -173,8 +171,10 @@ class CfHelper extends AppHelper {
 
         if ($dir) {
 
-            $this->configuration['assetDir'] = '/' . $dir . '/';
+            return $this->configuration['assetDir'] = '/' . $dir . '/';
         }
+
+        return $this->configuration['assetDir'] = '/';
     }
 
     /**
@@ -200,7 +200,6 @@ class CfHelper extends AppHelper {
     private function getProtocol() {
 
         if (env('HTTPS')) {
-
             return 'https://';
         }
 
@@ -219,7 +218,7 @@ class CfHelper extends AppHelper {
 
         if (!env('HTTPS')) {
 
-            if(strstr($this->configuration['assetHost'], '%d')) {
+            if (strstr($this->configuration['assetHost'], '%d')) {
 
                 $randomHost = rand($this->configuration['numHostsMin'], $this->configuration['numHostsMax']);
                 return sprintf($this->configuration['assetHost'], $randomHost);
