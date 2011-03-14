@@ -97,7 +97,7 @@ class CfHelper extends AppHelper {
         $this->setAssetDir($this->configuration['imgDir']);
 
         if ($assets[0] == '/') {
-            
+
             $this->setAssetDir(null);
         }
 
@@ -174,7 +174,7 @@ class CfHelper extends AppHelper {
             return $this->configuration['assetDir'] = '/' . $dir . '/';
         }
 
-        return $this->configuration['assetDir'] = '/';
+        return $this->configuration['assetDir'] = null;
     }
 
     /**
