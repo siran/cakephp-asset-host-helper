@@ -72,7 +72,11 @@ class CfHelper extends AppHelper {
 
     public function __construct($configuration) {
 
-        $this->configuration = Set::merge($this->configuration, $configuration);
+        $this->configuration = array_merge($this->configuration, $configuration);
+
+        if (Configure::read('debug') > 0) {
+            $this->configuration['assetHost'] = rtrim(env('HTTP_HOST') . Router::url('/'), '/');
+        }
     }
 
     /**
@@ -82,7 +86,7 @@ class CfHelper extends AppHelper {
      */
     public function beforeRender() {
 
-        if ((Configure::read('Asset.timestamp') == true && Configure::read() > 0) || Configure::read('Asset.timestamp') === 'force') {
+        if ((Configure::read('Asset.timestamp') == true && Configure::read('debug') > 0) || Configure::read('Asset.timestamp') === 'force') {
 
             $this->configuration['forceTimestamp'] = true;
         }
@@ -138,16 +142,17 @@ class CfHelper extends AppHelper {
      */
     private function setAssetPath($assets = null) {
 
-        if ($assets && Configure::read() == 0) {
+        if ($assets) {
             if (is_array($assets)) {
 
-                for ($i = 0; $i < count($assets); $i++) {
-                    $assets[$i] = $this->pathPrep() . $assets[$i] . $this->getAssetTimestamp();
+                $size = count($assets);
+                for ($i = 0; $i < $size; $i++) {
+                    $assets[$i] = $this->pathPrep($assets[$i]) . $assets[$i] . $this->getAssetTimestamp();
                 }
             }
             else {
 
-                return $this->pathPrep() . $assets . $this->getAssetTimestamp();
+                return $this->pathPrep($assets) . $assets . $this->getAssetTimestamp();
             }
         }
 
@@ -158,9 +163,9 @@ class CfHelper extends AppHelper {
      * Build asset URL
      *
      */
-    private function pathPrep() {
+    private function pathPrep($assets) {
 
-        return $this->getProtocol() . $this->getAssetHost($this->configuration['assetHost']) . $this->configuration['assetDir'];
+        return $this->getProtocol() . $this->getAssetHost($assets) . $this->configuration['assetDir'];
     }
 
     /**
@@ -214,13 +219,14 @@ class CfHelper extends AppHelper {
      * - SSL host
      *
      */
-    private function getAssetHost() {
+    private function getAssetHost($assets) {
 
         if (!env('HTTPS')) {
 
             if (strstr($this->configuration['assetHost'], '%d')) {
 
-                $randomHost = rand($this->configuration['numHostsMin'], $this->configuration['numHostsMax']);
+                $randomHost = (md5($assets) % 4);
+                //$randomHost = rand($this->configuration['numHostsMin'], $this->configuration['numHostsMax']);
                 return sprintf($this->configuration['assetHost'], $randomHost);
             }
             else {
