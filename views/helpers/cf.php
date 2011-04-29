@@ -62,6 +62,7 @@ class CfHelper extends AppHelper {
         'assetHost' => 'assets%d.example.com',
         'numHostsMin' => 0,
         'numHostsMax' => 3,
+        'modulo' => 1,
         'sslHost' => 'sslhost.example.com',
         'imgDir' => 'img',
         'jsDir' => 'js',
@@ -73,6 +74,11 @@ class CfHelper extends AppHelper {
     public function __construct($configuration) {
 
         $this->configuration = array_merge($this->configuration, $configuration);
+
+        $this->configuration['modulo'] = $this->configuration['numHostsMax'];
+        if ($this->configuration['numHostsMin'] == 0) {
+            $this->configuration['modulo'] = $this->configuration['numHostsMax'] + 1;
+        }
 
         if (Configure::read('debug') > 0) {
             $this->configuration['assetHost'] = rtrim(env('HTTP_HOST') . Router::url('/'), '/');
@@ -225,7 +231,7 @@ class CfHelper extends AppHelper {
 
             if (strstr($this->configuration['assetHost'], '%d')) {
 
-                $randomHost = (md5($assets) % 4);
+                $randomHost = (md5($assets) % $this->configuration['modulo']);
                 //$randomHost = rand($this->configuration['numHostsMin'], $this->configuration['numHostsMax']);
                 return sprintf($this->configuration['assetHost'], $randomHost);
             }
