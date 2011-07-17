@@ -1,34 +1,87 @@
-### CAKEPHP CDN/Clould Front helper
+# CakePHP CDN/Clould Front helper (domain sharding)
 
 Inspired by:
-[Amazon's Cloud Front](http://developer.amazonwebservices.com/connect/entry.jspa?externalID=2331)
+[Teknoid's cakephp asset host helper](https://github.com/teknoid/cakephp-asset-host-helper)
 
-And RoR's asset host helper:
-[RoR's api docs :{](http://api.rubyonrails.org/classes/ActionView/Helpers/AssetTagHelper.html)
+## Background
 
-(Please read the above link for a detailed explanation of what's going on here)
+This helper split web page resources across multiple domains (to make pages load faster).
 
-Instead of using Javascript or HTML helpers, you can use the provided Cf (Cloud Front) helper
-to create links to assets, you can now use:
+## Installation
 
-- $cf->image();
-- $cf->jsLink();
-- $cf->css();
+Clone/Copy the files in this directory into `app/plugins/asset_host_helper`
 
-All options are exactly the same as default CakePHP helpers.
+## Configuration
 
-We make an assumption that local file system mirrors the remote one (on S3/Cloud Front/etc.)
+Load the helper in your Controller:
 
-The only settings you need to be concerned about are:
+```php
+public $helpers = array(
+    'AssetHostHelper.Cf' => array(
+        'assetHost' => 's%d.example.com',
+        'numHostsMin' => 0,
+        'numHostsMax' => 2,
+        'sslHost' => 'www.example.com'
+    )
+);
+```
 
-- $assetHost = 'assets%d.example.com';
-- $numHostsMin = 0;
-- $numHostsMax = 3;
-- $sslHost = 'sslhost.example.com';
+### Options
 
-** Be sure to replace the above values in the helper to match your setup **
+    `
+    - assetHost :
 
-For any questions please contact me at the relevant blog post:
-[Over here](http://wp.me/peDIi-cJ)
+        Where are the assets hosted?
+        Possible options: 'assets.example.com', if you only have one host
+        Or: 'assets%d.example.com', if you have multiple hosts. %d gets replaced with host number
 
-Your input is greatly appreciated. 
+    - numHostsMin & numHostsMax
+
+        If above is 'assets%d.example.com' will generate host names from 0 - 3
+        i.e. assets0.example.com
+
+    - sslHost
+
+        Serving assets via SSL is slow, let's use a unique host (for better caching)
+
+    - imgDir
+
+        Where are the images relative to web root (local should mirror remote)
+        Try to stick to cake conventions.
+
+    - jsDir
+        Where are the JS files relative to web root (local should mirror remote)
+        Try to stick to cake conventions.
+
+    - cssDir
+        Where are the CSS files relative to web root (local should mirror remote)
+        Try to stick to cake conventions.
+
+    - assetDir
+
+        Will set asset directory depending on the asset type (css, js, img)
+
+    - forceTimestamp
+
+        We should really force the timestamp to improve caching.
+        Trun on the option in core.php
+    `
+
+## Usage
+
+Use it in your views like Html Helper, ex :
+
+```php
+echo $this->Cf->image('logo.png', array(
+        'width'=> '150',
+        'height'=> '50',
+        'alt'=> 'alternative text',
+        'url' => array(
+            'controller' => 'examples',
+            'action' => 'index',
+        )
+    )
+);
+```
+
+All options are same as default CakePHP helpers.
