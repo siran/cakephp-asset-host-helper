@@ -70,7 +70,7 @@ class CfHelper extends AppHelper {
      *      This feature is not required if the origin of cloudfront
      *      is your website.
      *
-     *      Thx redthor ! (https://github.com/redthor)
+     *      Thx to redthor ! (https://github.com/redthor)
      */
     public $configuration = array(
         'assetHost' => 'assets%d.example.com',

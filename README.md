@@ -79,7 +79,7 @@ public $helpers = array(
         This feature is not required if the origin of cloudfront
         is your website.
 
-        Thx redthor ! (https://github.com/redthor)
+        Thx to redthor ! (https://github.com/redthor)
     `
 
 ## Usage
