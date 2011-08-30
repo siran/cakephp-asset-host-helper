@@ -20,7 +20,7 @@ class CfHelper extends AppHelper {
     /**
      * Configuration
      *
-     *  - assetHost :
+     *  - assetHost
      *
      *      Where are the assets hosted?
      *      Possible options: 'assets.example.com', if you only have one host
@@ -57,6 +57,20 @@ class CfHelper extends AppHelper {
      *      We should really force the timestamp to improve caching.
      *      Trun on the option in core.php
      *
+     *  - remoteCompressedFiles
+     *
+     *      If Cloudfront origin is S3 then we can supply the user
+     *      with compressed files if we add them to S3 first and then
+     *      change the file that is requested.
+     *      To make this work we need a gzip version of each css and
+     *      js file in the format cake.gz.css.
+     *      If this is turned on the app will check that the agent
+     *      accepts gzip encoded files and will server the gz version
+     *      instead.
+     *      This feature is not required if the origin of cloudfront
+     *      is your website.
+     *
+     *      Thx redthor ! (https://github.com/redthor)
      */
     public $configuration = array(
         'assetHost' => 'assets%d.example.com',
@@ -68,20 +82,30 @@ class CfHelper extends AppHelper {
         'jsDir' => 'js',
         'cssDir' => 'css',
         'assetDir' => null,
-        'forceTimestamp' => false
+        'forceTimestamp' => false,
+        'remoteCompressedFiles' => false
     );
 
     public function __construct($configuration) {
 
-        $this->configuration = array_merge($this->configuration, $configuration);
+        if (!empty($configuration)) {
+            $this->configuration = array_merge($this->configuration, $configuration);
+        }
 
         $this->configuration['modulo'] = $this->configuration['numHostsMax'];
         if ($this->configuration['numHostsMin'] == 0) {
             $this->configuration['modulo'] = $this->configuration['numHostsMax'] + 1;
         }
 
+        $useCompressedFiles = $this->configuration['remoteCompressedFiles'] &&
+                              (strpos(env('HTTP_ACCEPT_ENCODING'), 'gzip') !== false) &&
+                              Configure::read('debug') == 0;
+
+        $this->configuration['remoteCompressedFiles'] = $useCompressedFiles;
+
         if (Configure::read('debug') > 0) {
             $this->configuration['assetHost'] = rtrim(env('HTTP_HOST') . Router::url('/'), '/');
+            $this->configuration['sslHost'] = rtrim(env('HTTP_HOST') . Router::url('/'), '/');
         }
     }
 
@@ -92,8 +116,7 @@ class CfHelper extends AppHelper {
      */
     public function beforeRender() {
 
-        if ((Configure::read('Asset.timestamp') == true && Configure::read('debug') > 0) || Configure::read('Asset.timestamp') === 'force') {
-
+        if ((Configure::read('Asset.timestamp') == true && Configure::read('debug') == 0) || Configure::read('Asset.timestamp') === 'force') {
             $this->configuration['forceTimestamp'] = true;
         }
     }
@@ -107,12 +130,10 @@ class CfHelper extends AppHelper {
         $this->setAssetDir($this->configuration['imgDir']);
 
         if ($assets[0] == '/') {
-
             $this->setAssetDir(null);
         }
 
         if ($src == true) {
-
             return $this->setAssetPath($assets);
         }
 
@@ -123,22 +144,22 @@ class CfHelper extends AppHelper {
      * Return JS link path/URL either remote or local based on the debug level
      *
      */
-    public function script($assets, $inline = true) {
+    public function script($assets, $options = array()) {
 
         $this->setAssetDir($this->configuration['jsDir']);
 
-        return $this->Html->script($this->setAssetPath($assets), $inline);
+        return $this->Html->script($this->setAssetPath($assets, true), $options);
     }
 
     /**
      * Return CSS link path/URL either remote or local based on the debug level
      *
      */
-    public function css($assets, $rel = null, $htmlAttributes = array(), $inline = true) {
+    public function css($assets, $rel = null, $options = array()) {
 
         $this->setAssetDir($this->configuration['cssDir']);
 
-        return $this->Html->css($this->setAssetPath($assets), $rel, $htmlAttributes, $inline);
+        return $this->Html->css($this->setAssetPath($assets, true), $rel, $options);
     }
 
     /**
@@ -146,26 +167,38 @@ class CfHelper extends AppHelper {
      * Works for arrays of assets (like with JS or CSS) or single files
      *
      */
-    private function setAssetPath($assets = null) {
+    private function setAssetPath($assets = null, $tryGzVersion = false) {
 
         if ($assets) {
             if (is_array($assets)) {
-
                 $size = count($assets);
                 for ($i = 0; $i < $size; $i++) {
-                    $assets[$i] = $this->pathPrep($assets[$i]) . $assets[$i] . $this->getAssetTimestamp();
+                    $assets[$i] = $this->pathPrep($assets[$i]) . $this->gzName($assets[$i], $tryGzVersion) . $this->getAssetTimestamp();
                 }
-            }
-            else {
-
-                return $this->pathPrep($assets) . $assets . $this->getAssetTimestamp();
+            } else {
+                return $this->pathPrep($assets) .  $this->gzName($assets, $tryGzVersion) . $this->getAssetTimestamp();
             }
         }
 
         return $assets;
     }
 
-   /**
+    /**
+     * Return the gzip filename of a file
+     * myapp.css -> myapp.gz.css
+     *
+     */
+    private function gzName($assetFileName, $tryGzVersion = false) {
+
+        if ($tryGzVersion && $this->configuration['remoteCompressedFiles']) {
+            $assetParts = pathinfo($assetFileName);
+            return $assetParts['filename'] . '.gz.' . $assetParts['extension'];
+        }
+
+        return $assetFileName;
+    }
+
+    /**
      * Build asset URL
      *
      */
@@ -181,7 +214,6 @@ class CfHelper extends AppHelper {
     private function setAssetDir($dir = null) {
 
         if ($dir) {
-
             return $this->configuration['assetDir'] = '/' . $dir . '/';
         }
 
@@ -197,7 +229,6 @@ class CfHelper extends AppHelper {
     private function getAssetTimestamp() {
 
         if ($this->configuration['forceTimestamp'] == true) {
-
             return '?' . @filemtime(str_replace('/', DS, WWW_ROOT . $this->configuration['assetDir']));
         }
 
@@ -228,20 +259,14 @@ class CfHelper extends AppHelper {
     private function getAssetHost($assets) {
 
         if (!env('HTTPS')) {
-
             if (strstr($this->configuration['assetHost'], '%d')) {
-
                 $randomHost = (md5($assets) % $this->configuration['modulo']);
                 //$randomHost = rand($this->configuration['numHostsMin'], $this->configuration['numHostsMax']);
                 return sprintf($this->configuration['assetHost'], $randomHost);
-            }
-            else {
-
+            } else {
                 return $this->configuration['assetHost'];
             }
-        }
-        elseif (env('HTTPS')) {
-
+        } elseif (env('HTTPS')) {
             return $this->configuration['sslHost'];
         }
     }
