@@ -65,6 +65,21 @@ public $helpers = array(
 
         We should really force the timestamp to improve caching.
         Trun on the option in core.php
+
+    - remoteCompressedFiles
+
+        If Cloudfront origin is S3 then we can supply the user
+        with compressed files if we add them to S3 first and then
+        change the file that is requested.
+        To make this work we need a gzip version of each css and
+        js file in the format cake.gz.css.
+        If this is turned on the app will check that the agent
+        accepts gzip encoded files and will server the gz version
+        instead.
+        This feature is not required if the origin of cloudfront
+        is your website.
+
+        Thx redthor ! (https://github.com/redthor)
     `
 
 ## Usage
