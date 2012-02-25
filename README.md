@@ -1,4 +1,4 @@
-# CakePHP CDN/Clould Front helper (domain sharding)
+# CakePHP 2.x CDN/Clould Front helper (domain sharding)
 
 Inspired by:
 [Teknoid's cakephp asset host helper](https://github.com/teknoid/cakephp-asset-host-helper)
@@ -9,7 +9,14 @@ This helper split web page resources across multiple domains (to make pages load
 
 ## Installation
 
-Clone/Copy the files in this directory into `app/plugins/asset_host_helper`
+Clone/Copy the files in this directory into `app/Plugin/AssetHost`.
+
+Then make sure you load the plugin:
+
+```php
+// in app/Config/bootstrap.php
+CakePlugin::load('AssetHost');
+```
 
 ## Configuration
 
