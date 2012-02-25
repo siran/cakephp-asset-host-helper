@@ -90,8 +90,8 @@ class CfHelper extends AppHelper {
     );
 
     public function __construct(View $view, $configuration = array()) {
+        
         parent::__construct($view, $configuration);
-
         if (!empty($configuration)) {
             $this->configuration = array_merge($this->configuration, $configuration);
         }
