@@ -241,7 +241,7 @@ class CfHelper extends AppHelper {
      */
     private function getProtocol() {
 
-        if (env('HTTPS')) {
+        if (env('HTTPS') || ($_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')) {
             return 'https://';
         }
 
@@ -258,7 +258,7 @@ class CfHelper extends AppHelper {
      */
     private function getAssetHost($assets) {
 
-        if (!env('HTTPS')) {
+        if (!env('HTTPS') && !($_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')) {
             if (strstr($this->configuration['assetHost'], '%d')) {
                 $randomHost = (md5($assets) % $this->configuration['modulo']);
                 //$randomHost = rand($this->configuration['numHostsMin'], $this->configuration['numHostsMax']);
@@ -266,7 +266,7 @@ class CfHelper extends AppHelper {
             } else {
                 return $this->configuration['assetHost'];
             }
-        } elseif (env('HTTPS')) {
+        } elseif (env('HTTPS')  || ($_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')) {
             return $this->configuration['sslHost'];
         }
     }
