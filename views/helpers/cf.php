@@ -148,6 +148,10 @@ class CfHelper extends AppHelper {
 
         $this->setAssetDir($this->configuration['jsDir']);
 
+        if ($assets[0] == '/') {
+            $this->setAssetDir(null);
+        }
+
         return $this->Html->script($this->setAssetPath($assets, true), $options);
     }
 
@@ -158,6 +162,10 @@ class CfHelper extends AppHelper {
     public function css($assets, $rel = null, $options = array()) {
 
         $this->setAssetDir($this->configuration['cssDir']);
+
+        if ($assets[0] == '/') {
+            $this->setAssetDir(null);
+        }
 
         return $this->Html->css($this->setAssetPath($assets, true), $rel, $options);
     }
