@@ -88,6 +88,10 @@ class CfHelper extends AppHelper {
 
     public function __construct($configuration) {
 
+	$cloudFrontConfiguration = Configure::read('aws.cloudfront');
+        if (!empty($cloudFrontConfiguration)) {
+                $this->configuration = array_merge($this->configuration, $cloudFrontConfiguration);
+        }
         if (!empty($configuration)) {
             $this->configuration = array_merge($this->configuration, $configuration);
         }
