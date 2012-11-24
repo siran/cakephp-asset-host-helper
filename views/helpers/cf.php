@@ -108,8 +108,8 @@ class CfHelper extends AppHelper {
         $this->configuration['remoteCompressedFiles'] = $useCompressedFiles;
 
         if (Configure::read('Cf.debug') > 0) {
-            $this->configuration['assetHost'] = rtrim(env('HTTP_HOST') . Router::url('/'), '/');
-            $this->configuration['sslHost'] = rtrim(env('HTTP_HOST') . Router::url('/'), '/');
+            $this->configuration['assetHost'] = rtrim(HOST_DOMAIN . Router::url('/'), '/');
+            $this->configuration['sslHost'] = rtrim(HOST_DOMAIN . Router::url('/'), '/');
         }
     }
 
