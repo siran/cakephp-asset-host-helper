@@ -107,7 +107,7 @@ class CfHelper extends AppHelper {
 
         $this->configuration['remoteCompressedFiles'] = $useCompressedFiles;
 
-        if (Configure::read('debug') > 0) {
+        if (Configure::read('Cf.debug') > 0) {
             $this->configuration['assetHost'] = rtrim(env('HTTP_HOST') . Router::url('/'), '/');
             $this->configuration['sslHost'] = rtrim(env('HTTP_HOST') . Router::url('/'), '/');
         }
@@ -118,7 +118,7 @@ class CfHelper extends AppHelper {
      * (We really, really should)
      *
      */
-    public function beforeRender() {
+    public function beforeRender($viewFile) {
 
         if ((Configure::read('Asset.timestamp') == true && Configure::read('debug') == 0) || Configure::read('Asset.timestamp') === 'force') {
             $this->configuration['forceTimestamp'] = true;
